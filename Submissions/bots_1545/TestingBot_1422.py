@@ -3,14 +3,14 @@ from Game.Skills import *
 from Game.projectiles import *
 from ScriptingHelp.usefulFunctions import *
 from Game.playerActions import defense_actions, attack_actions, projectile_actions
-from Game.gameSettings import HP, LEFTBORDER, RIGHTBORDER, LEFTSTART, RIGHTSTART, PARRYSTUN
-
+from gameSettings import HP, LEFTBORDER, RIGHTBORDER, LEFTSTART, RIGHTSTART, PARRYSTUN
+from random import randint
 
 # PRIMARY CAN BE: Teleport, Super Saiyan, Meditate, Dash Attack, Uppercut, One Punch
 # SECONDARY CAN BE : Hadoken, Grenade, Boomerang, Bear Trap
 
 # TODO FOR PARTICIPANT: Set primary and secondary skill here
-PRIMARY_SKILL = DashAttackSkill
+PRIMARY_SKILL = Meditate
 SECONDARY_SKILL = Hadoken
 
 #constants, for easier move return
@@ -28,7 +28,6 @@ BLOCK = ("block",)
 
 PRIMARY = get_skill(PRIMARY_SKILL)
 SECONDARY = get_skill(SECONDARY_SKILL)
-CANCEL = ("skill_cancel", )
 
 # no move, aka no input
 NOMOVE = "NoMove"
@@ -36,33 +35,48 @@ NOMOVE = "NoMove"
 moves = SECONDARY,
 moves_iter = iter(moves)
 
+
 # TODO FOR PARTICIPANT: WRITE YOUR WINNING BOT
 class Script:
     def __init__(self):
         self.primary = PRIMARY_SKILL
         self.secondary = SECONDARY_SKILL
-        
+        #self.current_tick = 0
     # DO NOT TOUCH
     def init_player_skills(self):
         return self.primary, self.secondary
     
     # MAIN FUNCTION that returns a single move to the game manager
     def get_move(self, player, enemy, player_projectiles, enemy_projectiles):
-        distance = get_distance(player, enemy)
-        # Dash attack if distance is less than 5 (and it not already on cooldown) -- equal to its range
-        if distance <= 5:
-            if not primary_on_cooldown(player):
-                #back_move = 0
-                #while distance <= 5:  # count the number of back moves required to get out of the x-range of 5
-                 #   back_move += 1
-                  #  distance += 1
-                    
+        # current_tick += 1
+        # if current_tick == 2:
+        #     return JUMP
+
+        distance = abs(get_pos(player)[0] - get_pos(enemy)[0])
+
+        if get_primary_cooldown(player) == 0:
+            if get_hp(player) < 90:
                 return PRIMARY
-                
-                    
-        # otherwise execute secondary skill if distance is greater than that        
-        elif not secondary_on_cooldown(player):
+        if get_secondary_cooldown(player) == 0:
             return SECONDARY
-        
-        return FORWARD
+        if distance == 1:
+            if get_stun_duration(enemy) != 0:
+                return LIGHT
+            if get_primary_skill(enemy) == OnePunchSkill and get_primary_cooldown(enemy) == 0:
+                return JUMP
+            return BLOCK
+        if get_secondary_skill(enemy) == Grenade or get_primary_skill(enemy) == UppercutSkill:
+            return BACK
+        return JUMP_FORWARD
+        # if distance == 1 and get_stun_duration(enemy) != 0: 
+        #     #if enemy stun, light attack
+        #     return LIGHT
+        # elif distance == 1:
+        #     return LIGHT
+        # elif distance == 2:
+        #     return LIGHT
+        # elif distance > 2:
+        #     return LIGHT
+        # return LIGHT
+
         

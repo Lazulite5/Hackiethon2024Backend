@@ -3,7 +3,7 @@ from Game.Skills import *
 from Game.projectiles import *
 from ScriptingHelp.usefulFunctions import *
 from Game.playerActions import defense_actions, attack_actions, projectile_actions
-from gameSettings import HP, LEFTBORDER, RIGHTBORDER, LEFTSTART, RIGHTSTART, PARRYSTUN
+from Game.gameSettings import HP, LEFTBORDER, RIGHTBORDER, LEFTSTART, RIGHTSTART, PARRYSTUN
 
 
 # PRIMARY CAN BE: Teleport, Super Saiyan, Meditate, Dash Attack, Uppercut, One Punch
@@ -28,6 +28,7 @@ BLOCK = ("block",)
 
 PRIMARY = get_skill(PRIMARY_SKILL)
 SECONDARY = get_skill(SECONDARY_SKILL)
+CANCEL = ("skill_cancel", )
 
 # no move, aka no input
 NOMOVE = "NoMove"
@@ -47,9 +48,12 @@ class Script:
     
     # MAIN FUNCTION that returns a single move to the game manager
     def get_move(self, player, enemy, player_projectiles, enemy_projectiles):
+        if not secondary_on_cooldown(player):
+            return SECONDARY
+        
         distance = abs(get_pos(player)[0] - get_pos(enemy)[0])
-
-        if distance == 1:
+        if distance < 3:
             return LIGHT
         
         return FORWARD
+        

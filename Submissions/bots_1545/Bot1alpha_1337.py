@@ -49,20 +49,18 @@ class Script:
     # MAIN FUNCTION that returns a single move to the game manager
     def get_move(self, player, enemy, player_projectiles, enemy_projectiles):
         distance = get_distance(player, enemy)
-        # Dash attack if distance is less than 5 (and it not already on cooldown) -- equal to its range
+        
+        # Dash attack or Hadoken if distance is less than 5 (and it not already on cooldown) -- equal to its range
         if distance <= 5:
             if not primary_on_cooldown(player):
-                #back_move = 0
-                #while distance <= 5:  # count the number of back moves required to get out of the x-range of 5
-                 #   back_move += 1
-                  #  distance += 1
-                    
                 return PRIMARY
-                
-                    
-        # otherwise execute secondary skill if distance is greater than that        
-        elif not secondary_on_cooldown(player):
-            return SECONDARY
-        
-        return FORWARD
+            # otherwise execute secondary skill if primary on cooldown        
+            elif not secondary_on_cooldown(player):
+                return SECONDARY
+            # if both on cooldown, jump back to avoid attacks
+            else:
+                return JUMP_BACKWARD
+        # if very close to enemy, spam light attacks    
+        elif distance <= 1:
+            return LIGHT
         

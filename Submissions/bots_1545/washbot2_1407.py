@@ -3,7 +3,9 @@ from Game.Skills import *
 from Game.projectiles import *
 from ScriptingHelp.usefulFunctions import *
 from Game.playerActions import defense_actions, attack_actions, projectile_actions
-from Game.gameSettings import HP, LEFTBORDER, RIGHTBORDER, LEFTSTART, RIGHTSTART, PARRYSTUN
+from gameSettings import HP, LEFTBORDER, RIGHTBORDER, LEFTSTART, RIGHTSTART, PARRYSTUN
+
+from random import randint
 
 
 # PRIMARY CAN BE: Teleport, Super Saiyan, Meditate, Dash Attack, Uppercut, One Punch
@@ -11,7 +13,7 @@ from Game.gameSettings import HP, LEFTBORDER, RIGHTBORDER, LEFTSTART, RIGHTSTART
 
 # TODO FOR PARTICIPANT: Set primary and secondary skill here
 PRIMARY_SKILL = DashAttackSkill
-SECONDARY_SKILL = Hadoken
+SECONDARY_SKILL = Grenade
 
 #constants, for easier move return
 #movements
@@ -28,7 +30,6 @@ BLOCK = ("block",)
 
 PRIMARY = get_skill(PRIMARY_SKILL)
 SECONDARY = get_skill(SECONDARY_SKILL)
-CANCEL = ("skill_cancel", )
 
 # no move, aka no input
 NOMOVE = "NoMove"
@@ -48,21 +49,50 @@ class Script:
     
     # MAIN FUNCTION that returns a single move to the game manager
     def get_move(self, player, enemy, player_projectiles, enemy_projectiles):
+
+
         distance = get_distance(player, enemy)
-        # Dash attack if distance is less than 5 (and it not already on cooldown) -- equal to its range
-        if distance <= 5:
+        distance_x = abs(get_pos(player)[0] - get_pos(enemy)[0])
+
+        if 0 <= distance <= 4:
+            if distance <= 1:
+                if get_primary_skill(enemy) == "onepunch" and not primary_on_cooldown(enemy):
+                    if distance_x == 1:
+                        return JUMP_BACKWARD
+                else:
+                    if not secondary_on_cooldown(player):
+                        return SECONDARY
+                    if not heavy_on_cooldown(player):
+                        return HEAVY
+                    if get_stun_duration(enemy) != 0:
+                        return BLOCK
+                    else:
+                        return JUMP_BACKWARD
+
             if not primary_on_cooldown(player):
-                #back_move = 0
-                #while distance <= 5:  # count the number of back moves required to get out of the x-range of 5
-                 #   back_move += 1
-                  #  distance += 1
-                    
                 return PRIMARY
-                
-                    
-        # otherwise execute secondary skill if distance is greater than that        
-        elif not secondary_on_cooldown(player):
-            return SECONDARY
+
+            if not secondary_on_cooldown(player):
+                return SECONDARY
+
+            else:
+                return JUMP_BACKWARD
+
+        if 4 < distance < 7:
+            if not secondary_on_cooldown(player):
+                return SECONDARY
+
+            if not primary_on_cooldown(player):
+                return PRIMARY
+
+            
+            else:
+                if randint(0,1):
+                    return BLOCK
+                else:
+                    return FORWARD
+
+        if distance >= 7:
+            return JUMP_FORWARD
         
-        return FORWARD
-        
+
